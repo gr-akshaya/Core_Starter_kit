@@ -1,11 +1,20 @@
-import { useState } from "react";
-import { useAccount, useBalance, useChainId, useSendTransaction } from "wagmi";
+import { useState, useEffect } from "react";
+import {
+  useAccount,
+  useBalance,
+  useChainId,
+  useSendTransaction,
+  useTransaction,
+} from "wagmi";
 import { parseEther } from "viem";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import styles from "../styles/TokenTransfer.module.css";
 
 const TokenTransfer = () => {
   const [recipientAddress, setRecipientAddress] = useState("");
   const [amount, setAmount] = useState("");
+  const [txHash, setTxHash] = useState("");
   const { address } = useAccount();
   const chainId = useChainId();
 
@@ -16,13 +25,47 @@ const TokenTransfer = () => {
 
   const { sendTransaction, error: sendError } = useSendTransaction();
 
+  const {
+    isLoading: isTransactionPending,
+    isSuccess: isTransactionSuccessful,
+  } = useTransaction({
+    hash: txHash as `0x${string}`,
+  });
+
+  useEffect(() => {
+    if (isTransactionSuccessful) {
+      const explorerUrl = `${
+        chainId === 1114
+          ? "https://scan.test2.btcs.network"
+          : "https://scan.test.btcs.network"
+      }/tx/${txHash}`;
+
+      toast.success(
+        <div>
+          Transaction successful!{" "}
+          <a
+            href={explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#0000EE", textDecoration: "underline" }}
+          >
+            View on Explorer
+          </a>
+        </div>,
+        {
+          onClick: () => window.open(explorerUrl, "_blank"),
+        }
+      );
+    }
+  }, [isTransactionSuccessful, chainId, txHash]);
+
   const getFaucetLink = () => {
     if (chainId === 1114) {
-      //
-      return "https://rpc.test2.btcs.network";
+      //Testnet2
+      return "https://scan.test2.btcs.network/faucet";
     } else if (chainId === 1115) {
-      //
-      return "https://rpc.test.btcs.network";
+      //Testnet1
+      return "https://scan.test.btcs.network/faucet";
     }
     return "";
   };
@@ -30,12 +73,21 @@ const TokenTransfer = () => {
   const handleTransfer = () => {
     if (!sendTransaction || !recipientAddress || !amount) return;
     try {
-      sendTransaction({
-        to: recipientAddress as `0x${string}`,
-        value: parseEther(amount),
-      });
+      toast.info("Sending transaction...");
+      sendTransaction(
+        {
+          to: recipientAddress as `0x${string}`,
+          value: parseEther(amount),
+        },
+        {
+          onSuccess: (hash) => {
+            setTxHash(hash);
+          },
+        }
+      );
     } catch (error) {
       console.error("Transfer failed:", error);
+      toast.error("Transfer failed!");
     }
   };
 
@@ -85,10 +137,19 @@ const TokenTransfer = () => {
       )}
       <button
         onClick={handleTransfer}
-        disabled={!sendTransaction || insufficientBalance}
+        disabled={
+          chainId === 1116 ||
+          !sendTransaction ||
+          insufficientBalance ||
+          isTransactionPending
+        }
         className={styles.transferButton}
       >
-        Send {chainId === 1114 ? "TCORE2" : "TCORE"}
+        {chainId !== 1114 && chainId !== 1115
+          ? "Connect to Core Testnet"
+          : isTransactionPending
+          ? "Sending..."
+          : `Send ${chainId === 1114 ? "TCORE2" : "TCORE"}`}
       </button>
     </div>
   );
