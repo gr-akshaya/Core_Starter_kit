@@ -1,29 +1,96 @@
-This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Next.js](https://nextjs.org/) project bootstrapped with [`create-rainbowkit`](/packages/create-rainbowkit).
+# Core Blockchain Quickstart (Next.js + RainbowKit)
 
-## Getting Started
+A lightweight starter kit to build dApps on the **Core Blockchain**, using **Next.js** and **RainbowKit** for seamless wallet connectivity
 
-First, run the development server:
+## ✨ Features
+
+- Built with **Next.js 15**
+- **RainbowKit** for wallet connection
+- **wagmi** + **viem** for Core-compatible blockchain interaction
+- **React Toastify** for notifications
+- Pre-configured for **Core Mainnet** and **Core Testnet**
+
+## 📦 Tech Stack
+
+- [Next.js](https://nextjs.org/)
+- [RainbowKit](https://rainbowkit.com/)
+- [wagmi ](https://wagmi.sh/)
+- [viem 2.27.2](https://viem.sh/)
+- [Core Official Documentation](https://docs.coredao.org/)
+
+## 🚀 Getting Started
+
+### 1. Clone the repo
 
 ```bash
-npm run dev
+git clone https://github.com/your-org/core-quickstart.git
+cd core-quickstart
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+# or
+yarn install
+```
 
-## Learn More
+### 3. Configure your project
 
-To learn more about this stack, take a look at the following resources:
+Create a `.env.local` file in the root directory and add your project ID:
 
-- [RainbowKit Documentation](https://rainbowkit.com) - Learn how to customize your wallet connection flow.
-- [wagmi Documentation](https://wagmi.sh) - Learn how to interact with Ethereum.
-- [Next.js Documentation](https://nextjs.org/docs) - Learn how to build a Next.js application.
+```bash
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id_here
+```
 
-You can check out [the RainbowKit GitHub repository](https://github.com/rainbow-me/rainbowkit) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+core-quickstart/
+├── src/
+│   ├── pages/         # Next.js pages
+│   ├── styles/        # CSS styles
+│   └── wagmi.ts       # Wallet configuration
+├── public/            # Static assets
+└── package.json       # Project dependencies
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Wallet Setup with RainbowKit
 
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```ts
+// src/wagmi.ts
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { coreDao, coreTestnet1, coreTestnet2 } from "wagmi/chains";
+
+export const config = getDefaultConfig({
+  appName: "Core Quickstart",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+  chains: [coreDao, coreTestnet1, coreTestnet2],
+  ssr: true,
+});
+```
+
+## Development
+
+```bash
+npm run dev     # Start dev server
+npm run build   # Build for production
+npm run start   # Run production server
+```
+
+## Example: Home Page
+
+```tsx
+// pages/index.tsx
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import styles from "../styles/Home.module.css";
+
+export default function Home() {
+  return (
+    <div className={styles.container}>
+      <h1>🚀 Welcome to Core dApp Starter</h1>
+      <ConnectButton />
+    </div>
+  );
+}
+```
